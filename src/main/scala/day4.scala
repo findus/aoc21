@@ -1,4 +1,7 @@
+import day4.won
+
 import scala.io.Source
+import scala.collection.immutable.SortedMap
 
 case class Board(data: Seq[Array[String]]) {
 
@@ -54,17 +57,50 @@ object day4 extends App {
 
   val boards = lines.sliding(5,6).map(strs => strs.map(str => str.trim.split("  ?"))).map(strs => Board(strs)).toList
 
+  implicit def ordering[A <: Seq[String]]: Ordering[A] = new Ordering[A] {
+    override def compare(x: A, y: A): Int = {
+      x.size.compareTo(y.size)
+    }
+  }
+
   val won = input
-    .foldLeft(Seq.empty[Board],Option.empty[Seq[String]],Seq.empty[String],Option.empty[Board])((prev,data) => {
-      val i: Seq[String] = prev._3 ++ Seq(data)
-      val boardsThatWon = boards.filter(board => board.won(i))
-      val winningNmbr = if (prev._1.isEmpty && boardsThatWon.nonEmpty) {Some(i)} else {prev._2}
-      val winningBoard = if (prev._4.isEmpty && boardsThatWon.nonEmpty) {Some(boardsThatWon.head)} else {prev._4}
-      (boardsThatWon,winningNmbr, i, winningBoard)
+    .foldLeft(SortedMap.empty[Seq[String],Board],Seq.empty[String],boards)((prev, data) => {
+      val i: Seq[String] = prev._2 ++ Seq(data)
+      val (boardsThatWon,remaining) = prev._3.partition(board => board.won(i))
+      val wonBoards = boardsThatWon.foldLeft(prev._1)((prev,data) => prev ++ SortedMap.apply((i,data)))
+      (wonBoards,i,remaining)
     })
 
+  def part1() = {
+    val sum = won._1.head._2.unmarkedSum(won._1.head._1)
+    val winningNumber = won._1.head._1.last.toInt
+    println(s"Part1: Sum: ${sum} WinningNbr: ${winningNumber} => ${sum * winningNumber}")
+  }
 
-  val sum = won._4.get.unmarkedSum(won._2.get)
-  println(s"Sum: ${sum} WinningNbr: ${won._2.get.last} => ${sum * won._2.get.last.toInt}")
+  def part2() = {
+
+    implicit def ordering[A <: Seq[String]]: Ordering[A] = new Ordering[A] {
+      override def compare(x: A, y: A): Int = {
+        x.size.compareTo(y.size)
+      }
+    }
+
+    val won = input
+      .foldLeft(SortedMap.empty[Seq[String],Board],Seq.empty[String],boards)((prev, data) => {
+        val i: Seq[String] = prev._2 ++ Seq(data)
+        val (boardsThatWon,remaining) = prev._3.partition(board => board.won(i))
+        val wonBoards = boardsThatWon.foldLeft(prev._1)((prev,data) => prev ++ SortedMap.apply((i,data)))
+        (wonBoards,i,remaining)
+      })
+
+    won._1.foreach(entry => {
+      val sum = entry._2.unmarkedSum(entry._1)
+      val winningNumber = entry._1.last.toInt
+      println(s"Part2: Sum: ${sum} WinningNbr: ${winningNumber} => ${sum * winningNumber}")
+    })
+  }
+
+  part1()
+  part2()
 
 }
