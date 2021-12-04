@@ -75,7 +75,6 @@ object day4 extends App {
   }
 
   def part2() = {
-
     won._1.foreach(entry => {
       val sum = entry._2.unmarkedSum(entry._1)
       val winningNumber = entry._1.last.toInt
