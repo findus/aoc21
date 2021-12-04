@@ -85,14 +85,6 @@ object day4 extends App {
       }
     }
 
-    val won = input
-      .foldLeft(SortedMap.empty[Seq[String],Board],Seq.empty[String],boards)((prev, data) => {
-        val i: Seq[String] = prev._2 ++ Seq(data)
-        val (boardsThatWon,remaining) = prev._3.partition(board => board.won(i))
-        val wonBoards = boardsThatWon.foldLeft(prev._1)((prev,data) => prev ++ SortedMap.apply((i,data)))
-        (wonBoards,i,remaining)
-      })
-
     won._1.foreach(entry => {
       val sum = entry._2.unmarkedSum(entry._1)
       val winningNumber = entry._1.last.toInt
