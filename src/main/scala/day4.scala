@@ -1,5 +1,3 @@
-import day4.won
-
 import scala.io.Source
 import scala.collection.immutable.SortedMap
 
@@ -45,7 +43,6 @@ case class Board(data: Seq[Array[String]]) {
   }
 }
 
-
 object day4 extends App {
 
   val filename = "src/main/resources/day4"
@@ -78,12 +75,6 @@ object day4 extends App {
   }
 
   def part2() = {
-
-    implicit def ordering[A <: Seq[String]]: Ordering[A] = new Ordering[A] {
-      override def compare(x: A, y: A): Int = {
-        x.size.compareTo(y.size)
-      }
-    }
 
     won._1.foreach(entry => {
       val sum = entry._2.unmarkedSum(entry._1)
