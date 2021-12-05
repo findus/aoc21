@@ -41,7 +41,6 @@ case class Line(start: (Int,Int), end: (Int,Int)) {
 }
 
 object day5 extends App {
-
   val filename = "src/main/resources/day5"
   val file = Source.fromFile(filename)
   val text = file.getLines();
@@ -52,6 +51,4 @@ object day5 extends App {
   val grouped_diags = positions_with_diagonals.groupBy(f => f).view.mapValues(_.size).filter { case (_,v) => v > 1 }.toMap
   println("Part1: ",grouped.size)
   println("Part2: ",grouped_diags.size)
-
-
 }
