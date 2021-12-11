@@ -70,7 +70,6 @@ object day11 extends App {
     if (newMap.flatten.reduce((prev,data) => if (prev == data && prev == 0) { prev} else { -1}) != -1) {
      //PArt 2
       println("all the same:", count)
-      println(newMap)
     }
 
     newMap
@@ -86,7 +85,6 @@ object day11 extends App {
     if (newMap.flatten.reduce((prev,data) => if (prev == data && prev == 0) { prev} else { -1}) != -1) {
       //PArt 2
       println("all the same:", count)
-      println(newMap)
     }
 
     newMap
