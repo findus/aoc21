@@ -62,7 +62,8 @@ object day11 extends App {
     list.map(row => row.map(nmbr => nmbr + 1))
   }
 
-  val rounds = (1 to 1000).foldLeft(listOfLines)((prev,count) => {
+  //Part 1
+  val rounds = (1 to 100).foldLeft(listOfLines)((prev,count) => {
     val incremented = increment(prev)
     val newMap = calculateFlashingOctopusses(incremented)
     // println("step,", count)
@@ -76,6 +77,20 @@ object day11 extends App {
   }).toList
 
   println(flashes)
+
+  // Part2
+  val rounds2 = (1 to 1000).foldLeft(listOfLines)((prev,count) => {
+    val incremented = increment(prev)
+    val newMap = calculateFlashingOctopusses(incremented)
+    // println("step,", count)
+    if (newMap.flatten.reduce((prev,data) => if (prev == data && prev == 0) { prev} else { -1}) != -1) {
+      //PArt 2
+      println("all the same:", count)
+      println(newMap)
+    }
+
+    newMap
+  }).toList
 
 
   private def print(incremented: List[List[Int]]) = {
