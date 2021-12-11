@@ -18,12 +18,6 @@ object day9 extends App {
     val botVal = if (cursor._1 < listOfLines.length - 1)        { listOfLines(cursor._1 + 1)(cursor._2) }  else { -1 }
     val result = (value < leftVal || leftVal == -1) && (value < rightVal || rightVal == -1 ) && (value < topVal || topVal == -1) && (value < botVal || botVal == -1)
 
-/*    if (result) {
-      println(s"   $topVal ")
-      println(s" $leftVal $value $rightVal ")
-      println(s"  $botVal ")
-    }*/
-
     (result,Some(cursor))
   }
 
