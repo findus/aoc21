@@ -1,6 +1,13 @@
 import scala.io.Source
 
-case class Cave(name: String,big: Boolean, val visitCount: Int, val edges: List[String])
+case class Cave(name: String, val visitCount: Int, val edges: List[String]) {
+  def isSmol(): Boolean = {
+    name.toUpperCase() != name || (name == "start" || name == "end")
+  }
+  def isNotStartOrEnd(): Boolean = {
+    (name != "start" && name != "end")
+  }
+}
 
 object day12 extends App {
 
@@ -21,7 +28,7 @@ object day12 extends App {
       .filter(c => c.visitCount > 0)
 
     var thisCave = cave
-    if (!cave.big) {
+    if (cave.isSmol()) {
       thisCave = cave.copy(visitCount = (cave.visitCount - 1))
     }
 
@@ -40,11 +47,11 @@ object day12 extends App {
   val filename = "src/main/resources/day12"
   val file = Source.fromFile(filename)
   val lines = file.getLines().toList
-  val caves = lines.flatMap(line => line.split("-")).sorted.distinct.map(cave => Cave(cave, cave.toUpperCase == cave && cave != "start" && cave != "end", 1, List.empty))
+  val caves = lines.flatMap(line => line.split("-")).sorted.distinct.map(cave => Cave(cave, 1, List.empty))
+  val connections = lines.map(line => (line.split("-")(0),line.split("-")(1)))
 
   //Part1
   def part1() = {
-    val connections = lines.map(line => (line.split("-")(0),line.split("-")(1)))
     val system = connections.foldLeft(caves)((prev,data) => addConnection(prev, data))
 
     val start = system.find(cave => cave.name == "start").get
@@ -56,6 +63,17 @@ object day12 extends App {
 
   def part2() = {
 
+    val system = connections.foldLeft(caves)((prev,data) => addConnection(prev, data))
+    val smolCaves = system.filter(c => c.isSmol() && c.isNotStartOrEnd())
+
+    val paths = smolCaves.foldLeft((system,List.empty[String]))((prev,smolCave) => {
+      val newSystem = system.updated(system.indexOf(smolCave), smolCave.copy(visitCount = 2))
+      val start = system.find(cave => cave.name == "start").get
+      val end = system.find(cave => cave.name == "end").get
+      (prev._1,prev._2.++(dfs(start,end.name,List.empty, newSystem).filter(e => e != null)))
+    })
+    val distinct = paths._2.sorted.distinct
+    println(distinct.length)
   }
 
   part1()
