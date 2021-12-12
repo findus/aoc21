@@ -11,8 +11,6 @@ case class Cave(name: String, val visitCount: Int, val edges: List[String]) {
 
 object day12 extends App {
 
-  var paths = List.empty[List[Cave]]
-
   def addConnection(list: List[Cave], connection: (String,String)) = {
     val cave1 = list.find(e => e.name == connection._1).get
     val cave2 = list.find(e => e.name == connection._2).get
@@ -77,10 +75,6 @@ object day12 extends App {
   }
 
   part1()
-  paths = List.empty
   part2()
-
-
-
 
 }
