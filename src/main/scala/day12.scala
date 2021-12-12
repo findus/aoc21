@@ -55,7 +55,7 @@ object day12 extends App {
     val start = system.find(cave => cave.name == "start").get
     val end = system.find(cave => cave.name == "end").get
 
-    val res = dfs(start,end.name,List.empty, system).filter(e => e != null)
+    val res = dfs(start,end.name,List.empty, system)
     println(res.length)
   }
 
@@ -68,7 +68,7 @@ object day12 extends App {
       val newSystem = system.updated(system.indexOf(smolCave), smolCave.copy(visitCount = 2))
       val start = system.find(cave => cave.name == "start").get
       val end = system.find(cave => cave.name == "end").get
-      (prev._1,prev._2.++(dfs(start,end.name,List.empty, newSystem).filter(e => e != null)))
+      (prev._1,prev._2.++(dfs(start,end.name,List.empty, newSystem)))
     })
     val distinct = paths._2.sorted.distinct
     println(distinct.length)
