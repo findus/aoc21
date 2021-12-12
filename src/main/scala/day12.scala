@@ -1,17 +1,18 @@
 import scala.io.Source
 
-case class Cave(name: String,big: Boolean, val visitCount: Int, var edges: List[String])
+case class Cave(name: String,big: Boolean, val visitCount: Int, val edges: List[String])
 
 object day12 extends App {
 
-  var caveSystem = List.empty[Cave]
   var paths = List.empty[List[Cave]]
 
-  def addConnection(connection: (String,String)) = {
-    val cave1 = caveSystem.find(e => e.name == connection._1).get
-    val cave2 = caveSystem.find(e => e.name == connection._2).get
-    cave1.edges = cave1.edges.::(cave2.name)
-    cave2.edges = cave2.edges.::(cave1.name)
+  def addConnection(list: List[Cave], connection: (String,String)) = {
+    val cave1 = list.find(e => e.name == connection._1).get
+    val cave2 = list.find(e => e.name == connection._2).get
+    val cave1_u = cave1.copy(edges = cave1.edges.::(cave2.name))
+    val cave2_u = cave2.copy(edges = cave2.edges.::(cave1.name))
+    val l = list.updated(list.indexOf(cave1), cave1_u).updated(list.indexOf(cave2),cave2_u)
+    l
   }
 
   def dfs(cave: Cave, goal: String, path: List[String], system: List[Cave]): List[String] = {
@@ -30,7 +31,7 @@ object day12 extends App {
       var list = List.empty[String]
       while (neighbours.nonEmpty) {
         val nextHop = neighbours.pop()
-        list = list.++(dfs(nextHop,goal, path.::(nextHop.name), system.updated(caveSystem.indexOf(cave),thisCave)))
+        list = list.++(dfs(nextHop,goal, path.::(nextHop.name), system.updated(system.indexOf(cave),thisCave)))
       }
       list
     }
@@ -43,28 +44,18 @@ object day12 extends App {
 
   //Part1
   def part1() = {
-    caveSystem = caves
     val connections = lines.map(line => (line.split("-")(0),line.split("-")(1)))
-    connections.foreach(connection => addConnection(connection))
+    val system = connections.foldLeft(caves)((prev,data) => addConnection(prev, data))
 
-    val start = caveSystem.find(cave => cave.name == "start").get
-    val end = caveSystem.find(cave => cave.name == "end").get
+    val start = system.find(cave => cave.name == "start").get
+    val end = system.find(cave => cave.name == "end").get
 
-    val res = dfs(start,end.name,List.empty, caveSystem).filter(e => e != null)
+    val res = dfs(start,end.name,List.empty, system).filter(e => e != null)
     println(res.length)
   }
 
   def part2() = {
-    //Part2
-    caveSystem = caves
-    val connections = lines.map(line => (line.split("-")(0),line.split("-")(1)))
-    connections.foreach(connection => addConnection(connection))
 
-    val start = caveSystem.find(cave => cave.name == "start").get
-    val end = caveSystem.find(cave => cave.name == "end").get
-
-    val res = dfs(start,end.name,List.empty, caveSystem).filter(e => e != null)
-    println(paths.length)
   }
 
   part1()
