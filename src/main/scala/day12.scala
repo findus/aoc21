@@ -48,7 +48,6 @@ object day12 extends App {
   val caves = lines.flatMap(line => line.split("-")).sorted.distinct.map(cave => Cave(cave, 1, List.empty))
   val connections = lines.map(line => (line.split("-")(0),line.split("-")(1)))
 
-  //Part1
   def part1() = {
     val system = connections.foldLeft(caves)((prev,data) => addConnection(prev, data))
 
