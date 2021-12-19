@@ -1,8 +1,12 @@
+import day13.folded2
+
 import scala.collection.mutable
 import scala.io.Source
 
 case class Edge(position: (Int,Int), cost: Int)
-case class CCave(position: (Int,Int), var distance: Int, risk: Int, neighbours: List[Edge], var previous: Option[CCave] = None)
+case class CCave(position: (Int,Int), var distance: Int, risk: Int, neighbours: List[Edge], var previous: Option[CCave] = None, var visited: Boolean = false) extends Ordering[CCave] {
+  override def compare(x: CCave, y: CCave): Int = x.distance.compareTo(y.distance)
+}
 
 object day15 extends App {
   val filename = "src/main/resources/day15"
@@ -14,7 +18,7 @@ object day15 extends App {
   val height = lines.length
   val width = lines.head.length
 
-  val caves = lines.zipWithIndex.flatMap(y => (y._1.toCharArray.zipWithIndex.map(c => CCave((c._2, y._2),-1, c._1.asDigit, List.empty))))
+  val caves = lines.zipWithIndex.flatMap(y => (y._1.toCharArray.zipWithIndex.map(c => CCave((c._2, y._2),10000, c._1.asDigit, List.empty))))
 
   def part1(): Unit = {
 
@@ -40,9 +44,8 @@ object day15 extends App {
     val end = cavesWithNeighbours.last
     val start = cavesWithNeighbours.head
 
-
-    dijkstra(start, cavesWithNeighbours)
-    shortestPath(end);
+    //println(dijkstra(start, cavesWithNeighbours))
+    println(dijkstra2(start, end, cavesWithNeighbours))
   }
 
   def part2() = {
@@ -66,20 +69,14 @@ object day15 extends App {
       prev.++(m)
     }).distinct.sortBy(_.position._2).toList
 
-    val nheight = fivexcave2.maxBy(_.position._2).position._2
-    val nwidth = fivexcave2.maxBy(_.position._1).position._1
-
-
     val start = fivexcave2.head
     val end = fivexcave2.last
 
-
-    dijkstra(start, fivexcave2)
-    shortestPath(end);
+    println(dijkstra2(start, end ,fivexcave2))
   }
 
-  part1()
-  //part2()
+ // part1()
+  part2()
 
   def getNeightbours(cave: CCave, width: Int, height: Int): List[(Int,Int)] = {
 
@@ -98,6 +95,96 @@ object day15 extends App {
       .toList
   }
 
+  def printPath(stop: CCave, input: List[CCave]) = {
+    var path = List(stop)
+    var c = stop
+    while (c.previous.isDefined) {
+      c = c.previous.get
+      path = path.::(c)
+    }
+
+    println("")
+    println("----------------------------------")
+
+    val maxY = input.map(e => e.position._1).max
+    val maxX = input.map(e => e.position._2).max
+
+    var lastY = 0
+    for {
+      y <- (0 to maxY)
+      x <- (0 to maxX)
+    } {
+      if (lastY != y) {
+        println("")
+        lastY = y
+      }
+      val entry = input.find(c => c.position == (x,y))
+      if (entry.isDefined && path.map(_.position).contains(entry.get.position)) {
+        print("X")
+      } else {
+        print(" ")
+      }
+    }
+  }
+
+  def dijkstra2(start : CCave, to: CCave, input: List[CCave]): Int = {
+    implicit val ord: Ordering[CCave] = (x: CCave, y: CCave) => y.distance.compareTo(x.distance)
+    var settled = List.empty[CCave]
+    val queue = mutable.PriorityQueue.empty[CCave]
+    queue.addOne(start)
+    start.distance = 0
+    var running = true
+
+    // Not visited
+    var thread = new Thread(new Runnable {
+      override def run(): Unit = while(running) {
+        println(settled.length.toDouble / input.length.toDouble)
+        Thread.sleep(2000)
+      }
+    })
+    thread.start()
+
+    val maxX = input.map(e=>e.position).maxBy(f => f._1)._1
+    val maxY = input.map(e=>e.position).maxBy(f => f._2)._2
+
+    while (settled.size != input.size) {
+
+      if (queue.isEmpty) {
+        running = false
+        return 0
+      }
+
+      val entry = queue.dequeue()
+
+      if (entry == to) {
+        running = false
+        return entry.distance
+      }
+
+      if (!settled.contains(entry)) {
+        entry.visited = true
+        settled = settled.::(entry)
+        val nextShortestCave = getNeightbours(entry,maxX,maxY).foldLeft(List.empty[CCave])((prev,data) => prev.::(input.find(p => p.position == data).get)).sortBy(_.risk)
+        for {neighbour <- nextShortestCave} {
+          if (!settled.contains(neighbour)) {
+            val dis = neighbour.risk
+            val newdis = entry.distance + dis
+            if (newdis < neighbour.distance) {
+              neighbour.distance = newdis
+              neighbour.previous = Some(entry)
+            }
+            queue.addOne(neighbour)
+          }
+        }
+      }
+
+    }
+
+    running =false
+
+    return input.last.distance
+  }
+
 
   def distance_update(nextShortestCave: CCave, neighbour: Edge, caves: List[CCave]) = {
     val alt = nextShortestCave.distance + neighbour.cost
@@ -105,10 +192,11 @@ object day15 extends App {
     if (alt < cave.distance ) {
       cave.distance = alt
       cave.previous = Some(nextShortestCave)
+      printPath(cave,caves)
     }
   }
 
-  def dijkstra(start: CCave, Q: List[CCave]): Unit = {
+  def dijkstra(start: CCave, Q: List[CCave]): Int = {
     val predecessor = None
     start.distance = 0
     var q = Q
@@ -121,19 +209,7 @@ object day15 extends App {
         }
       }
     }
-    return predecessor
-  }
-
-  def shortestPath(end: CCave) = {
-    var c: Option[CCave] = Some(end);
-    var risk = 0
-    while( c.isDefined) {
-      if (c.get.previous.isDefined) {
-        risk = risk + c.get.risk
-      }
-      c = c.get.previous
-    }
-    println(risk)
+    return Q.last.distance
   }
 
 
